@@ -1,15 +1,41 @@
 import React, { useState } from "react";
-import { Card, Form, Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Card, Form, Button, Alert } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+
+// Usuarios quemados
+const users = [
+  { email: "admin@admin.com", password: "admin", role: "admin" },
+  { email: "user@user.com", password: "user", role: "user" },
+];
 
 const LogIn = () => {
   const [validated, setValidated] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
+    event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
-      event.preventDefault();
       event.stopPropagation();
+    } else {
+      const email = event.target.elements.formGroupEmail.value;
+      const password = event.target.elements.formGroupPassword.value;
+      const user = users.find(
+        (user) => user.email === email && user.password === password
+      );
+      if (user) {
+        // Guardar la información del usuario en el estado global o contexto
+        // y redirigir según el rol
+        // Aquí solo se redirige al ejemplo "/dashboard"
+        if (user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
+      } else {
+        setError("Invalid email or password.");
+      }
     }
 
     setValidated(true);
@@ -72,6 +98,11 @@ const LogIn = () => {
                   Invalid password.
                 </Form.Control.Feedback>
               </Form.Group>
+              {error && (
+                <Alert variant="danger" style={{ marginTop: "10px" }}>
+                  {error}
+                </Alert>
+              )}
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <Button
                   type="submit"
