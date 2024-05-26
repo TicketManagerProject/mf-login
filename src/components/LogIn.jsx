@@ -21,13 +21,12 @@ const LogIn = () => {
     } else {
       const email = event.target.elements.formGroupEmail.value;
       const password = event.target.elements.formGroupPassword.value;
+      
       const user = users.find(
         (user) => user.email === email && user.password === password
       );
       if (user) {
-        // Guardar la información del usuario en el estado global o contexto
-        // y redirigir según el rol
-        // Aquí solo se redirige al ejemplo "/dashboard"
+
         if (user.role === "admin") {
           navigate("/admin/dashboard");
         } else {
