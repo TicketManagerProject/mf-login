@@ -2,18 +2,12 @@ import React, { useState } from "react";
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
-// Usuarios quemados
-const users = [
-  { email: "admin@admin.com", password: "admin", role: "admin" },
-  { email: "user@user.com", password: "user", role: "user" },
-];
-
 const LogIn = () => {
   const [validated, setValidated] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
@@ -21,22 +15,61 @@ const LogIn = () => {
     } else {
       const email = event.target.elements.formGroupEmail.value;
       const password = event.target.elements.formGroupPassword.value;
-      
-      const user = users.find(
-        (user) => user.email === email && user.password === password
-      );
-      if (user) {
 
-        if (user.role === "admin") {
+      try {
+        const response = await fetch(
+          "http://localhost:9090/realms/TurnsManagementApp/protocol/openid-connect/token",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              client_id: "spring-client-api-rest",
+              grant_type: "password",
+              username: email,
+              password: password,
+              client_secret: "sPXUY3dDrMi8NpSlTSXxe7lbXbGzCjEe",
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          setError("Invalid email or password");
+          setTimeout(() => setError(""), 3000);
+          return;
+        }
+
+        const data = await response.json();
+        const accessToken = data.access_token;
+        const decodeJWT = (token) => {
+          const base64Url = token.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split("")
+              .map((c) => {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          );
+
+          return JSON.parse(jsonPayload);
+        };
+
+        const decodedToken = decodeJWT(accessToken);
+        const role =
+          decodedToken.resource_access["spring-client-api-rest"].roles[0];
+        if (role === "Administrators-client-role") {
           navigate("/admin/dashboard");
         } else {
           navigate("/user/dashboard");
         }
-      } else {
-        setError("Invalid email or password.");
+      } catch (err) {
+        setError("Invalid email or password");
+        setTimeout(() => setError(""), 3000);
       }
     }
-
     setValidated(true);
   };
 
