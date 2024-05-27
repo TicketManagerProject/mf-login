@@ -8,9 +8,9 @@ const LogIn = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
+      event.preventDefault();
       event.stopPropagation();
     } else {
       const email = event.target.elements.formGroupEmail.value;
