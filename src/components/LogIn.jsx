@@ -15,7 +15,6 @@ const LogIn = () => {
     } else {
       const email = event.target.elements.formGroupEmail.value;
       const password = event.target.elements.formGroupPassword.value;
-
       try {
         const response = await fetch(
           "http://localhost:9090/realms/TurnsManagementApp/protocol/openid-connect/token",
